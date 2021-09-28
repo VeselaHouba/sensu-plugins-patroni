@@ -57,20 +57,20 @@ class CheckPatroni < Sensu::Plugin::Check::CLI
       case member['role']
       when 'replica'
         if member['lag'] > config[:lagwarn]
-          stats += 'Lag for ' + member['name'] + ' over ' + config[:lagwarn].to_s + '\n'
+          stats += 'Lag for ' + member['name'] + ' over ' + config[:lagwarn].to_s + "\n"
           warn += 1
         end
         if member['lag'] > config[:lagcrit]
-          message += 'Lag for ' + member['name'] + ' over ' + config[:lagcrit].to_s + '\n'
+          message += 'Lag for ' + member['name'] + ' over ' + config[:lagcrit].to_s + "\n"
           crit += 1
         end
         if member['timeline'] != ltimeline
-          message += 'Timeline for ' + member['name'] + ' does not match leader\n'
+          message += 'Timeline for ' + member['name'] + ' does not match leader' + "\n"
           crit += 1
         end
-        stats += ', lag: ' + member['lag'].to_s + '\n'
+        stats += ', lag: ' + member['lag'].to_s + "\n"
       when 'leader'
-        stats += '\n'
+        stats += "\n"
       end
     end
     critical message + stats if crit > 0

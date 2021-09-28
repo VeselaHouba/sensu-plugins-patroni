@@ -45,6 +45,12 @@ volumes:
     temp: {}
 
 steps:
+  - name: create release
+    image: plugins/github-release
+    settings:
+      api_key:
+        from_secret: GITHUB_TOKEN
+
   - name: publish
     image: docker:19-git
     volumes:
