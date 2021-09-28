@@ -1,0 +1,64 @@
+---
+kind: pipeline
+name: build
+
+volumes:
+  - name: bundle
+    temp: {}
+
+steps:
+  - name: install
+    image: ruby:2.5
+    volumes:
+      - name: bundle
+        path: /usr/local/bundle
+    commands:
+      - gem install bundler
+      - bundle install
+
+  - name: build
+    image: ruby:2.5
+    volumes:
+      - name: bundle
+        path: /usr/local/bundle
+    commands:
+      - bundle exec rake default
+      - gem build ${DRONE_REPO_NAME}.gemspec
+      - gem install ${DRONE_REPO_NAME}-*.gem
+
+---
+kind: pipeline
+name: publish
+depends_on:
+  - build
+
+services:
+  - name: docker
+    image: docker:dind
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run
+
+volumes:
+  - name: dockersock
+    temp: {}
+
+steps:
+  - name: publish
+    image: docker:19-git
+    volumes:
+      - name: dockersock
+        path: /var/run
+    environment:
+      GITHUB_TOKEN:
+        from_secret: GITHUB_TOKEN
+    commands:
+      - sleep 5  # wait for docker service to start
+      - apk add bash curl jq
+      - git clone https://github.com/sensu/sensu-go-bonsai-asset.git bonsai || echo "bonsai/ exists, skipping git clone"
+      - bonsai/ruby-runtime/build-ruby-plugin-assets.sh $${DRONE_REPO_NAME} $${DRONE_REPO} $${DRONE_COMMIT_REF} $${DRONE_TAG}
+
+trigger:
+  event:
+    - tag
