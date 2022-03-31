@@ -20,7 +20,8 @@ jobs:
         run: |
           bundle exec rake default
           gem build ${{ steps.repo-name.outputs.value }}.gemspec
-          gem install ${{ steps.repo-name.outputs.value }}.gem
+          echo "build done"
+          gem install ${{ steps.repo-name.outputs.value }}-*.gem
 
   publish:
     needs: build
