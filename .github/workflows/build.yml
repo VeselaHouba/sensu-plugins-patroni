@@ -22,7 +22,8 @@ jobs:
           gem build ${{ steps.repo-name.outputs.value }}.gemspec
           echo "build done"
           ls -l
-          gem install ${{ steps.repo-name.outputs.value }}-*.gem
+          echo gem install ${{ steps.repo-name.outputs.value }}-*.gem
+          exit 1
 
   publish:
     needs: build
