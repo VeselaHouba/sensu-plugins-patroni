@@ -1,0 +1,36 @@
+---
+name: Build & publish assets
+on:
+  push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ruby/setup-ruby@477b21f02be01bcb8030d50f37cfec92bfa615b6
+        with:
+          ruby-version: 2.5
+      - run: bundle install
+
+      - name: Gembuild
+        run: |
+          bundle exec rake default
+          gem build *.gemspec
+          gem install *.gem
+
+
+  publish:
+    runs-on: docker:19-git
+    steps:
+      - name: Fetch Repo Name
+        id: repo-name
+        run: echo "::set-output name=value::$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')"
+
+      - name: Publish
+        run: |
+          apk add bash curl jq
+          git clone https://github.com/sensu/sensu-go-bonsai-asset.git bonsai || echo "bonsai/ exists, skipping git clone"
+          bonsai/ruby-runtime/build-ruby-plugin-assets.sh ${{ steps.repo-name.outputs.value }} ${GITHUB_REPOSITORY} ${GITHUB_REF} ${GITHUB_REF_NAME}
+        env:
+          GITHUB_TOKEN: "${{secrets.GITHUB_TOKEN}}"
