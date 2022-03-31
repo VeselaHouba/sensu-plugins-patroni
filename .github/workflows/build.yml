@@ -21,6 +21,7 @@ jobs:
           bundle exec rake default
           gem build ${{ steps.repo-name.outputs.value }}.gemspec
           echo "build done"
+          ls -l
           gem install ${{ steps.repo-name.outputs.value }}-*.gem
 
   publish:
