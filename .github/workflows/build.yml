@@ -11,14 +11,15 @@ jobs:
       - uses: ruby/setup-ruby@477b21f02be01bcb8030d50f37cfec92bfa615b6
         with:
           ruby-version: 2.5
+      - name: Fetch Repo Name
+        id: repo-name
+        run: echo "::set-output name=value::$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')"
       - run: bundle install
-
       - name: Gembuild
         run: |
           bundle exec rake default
-          gem build *.gemspec
-          gem install *.gem
-
+          gem build ${{ steps.repo-name.outputs.value }}.gemspec
+          gem install ${{ steps.repo-name.outputs.value }}.gem
 
   publish:
     needs: build
